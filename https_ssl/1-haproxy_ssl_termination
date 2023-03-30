@@ -20,7 +20,7 @@ defaults
 
 frontend http-in
     bind *:80
-    bind *:443 ssl crt /etc/letsencrypt/live/www.frankonyema.tech/haproxy.pem
+    bind *:443 ssl crt /etc/letsencrypt/live/www.frankonyemaorji.tech/haproxy.pem
     redirect scheme https code 301 if !{ ssl_fc }
     mode http
     default_backend backend_servers
