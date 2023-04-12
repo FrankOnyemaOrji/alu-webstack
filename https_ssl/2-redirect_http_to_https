@@ -1,34 +1,18 @@
-global
-    log /dev/log local0
-    log /dev/log local1 notice
-    chroot /var/lib/haproxy
-    user haproxy
-    group haproxy
-    daemon
-    ca-base /etc/ssl/certs
-    crt-base /etc/ssl/private
-    tune.ssl.default-dh-param 2048
-
-defaults
-    log     global
-    mode    http
-    option  httplog
-    option  dontlognull
-    timeout connect 5000
-    timeout client  50000
-    timeout server  50000
-
-frontend http-in
+frontend www-http
     bind *:80
-    bind *:443 ssl crt /etc/letsencrypt/live/www.frankonyemaorji.tech/haproxy.pem
-    redirect scheme https code 301 if !{ ssl_fc }
     mode http
-    default_backend backend_servers
+    default_backend web-backend
+frontend www-https
+    bind *:443 ssl crt /etc/haproxy/dauda.tech.pem
+    http-request set-header X-Forwarded-Proto https
+    acl letsencrypt-acl path_beg /.well-known/acme-challenge/
+    use_backend letsencrypt-backend if letsencrypt-acl
+    default_backend web-backend
 
-backend backend_servers
+backend web-backend
+    redirect scheme https unless { ssl_fc }
     balance roundrobin
-    mode http
-    option httpchk
-    http-check expect status 200
-    server web-01 3.94.98.53:80 check
-    server web-02 54.145.224.181:80 check
+    server 5479-web-01 50.17.72.93:80 check
+    server 5479-web-02 54.82.248.134:80 check
+backend letsencrypt-backend
+   server letsencrypt 127.0.0.1:54321
